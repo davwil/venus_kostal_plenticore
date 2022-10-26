@@ -60,15 +60,12 @@ Venus OS does not come with git, so I recommend cloning/downloading this repo to
    - `chmod 755 /data/venus_kostal_plenticore/service/run`
    - `chmod 744 /data/venus_kostal_plenticore/kill_me.sh`
 
-
-3. Link VElib 
-   - `ln -s /opt/victronenergy/dbus-pump/ext/velib_python /data/venus_kostal_plenticore/`
-
-4. Verify that your setup is correct:
+   
+3. Verify that your setup is correct:
 
    - Run `/data/venus_kostal_plenticore/kostal.py /data/venus_kostal_plenticore/kostal.ini`. If everything works fine you should see your kostals current values printed periodically. If not fix your config/installation and try again.
 
-5. Enable services:
+4. Enable services:
    - `ln -s /data/venus_kostal_plenticore/service /service/venus_kostal_plenticore` The daemon-tools should automatically start this service within seconds.
 
 
