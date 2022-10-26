@@ -40,14 +40,15 @@ Important: You might need to reinstall these dependencies after a venus os updat
 
 ### Install plugin:
 
-Download all files from this repo and copy them to the new dir /data/venus_kostal_plenticore.
+Download all files from this repo and copy them to the new dir `/data/venus_kostal_plenticore`.
+If you download the code as .zip from github, make sure to remove the `-main` prefix. 
 Create that dir if it does not jet exists. 
-Venus OS does not come with git, so I recommend cloning/downloading this repo to your machine, then transfer all files e.g. using scp( `scp venus_kostal_pico/* root@venusip:/data/venus_kostal_pico/`)
+Venus OS does not come with git, so I recommend cloning/downloading this repo to your machine, then transfer all files e.g. using scp (`scp venus_kostal_plenticore/* root@venusip:/data/venus_kostal_plenticore/`)
 
 
 ### Configure plugin:
 
-1. configure kostal.ini: set kostal_name, the inverters ip, password and refresh interval
+1. configure `kostal.ini`: set kostal_name, the inverters ip, password and refresh interval
 
     ```
     [kostal_name]
@@ -68,12 +69,22 @@ Venus OS does not come with git, so I recommend cloning/downloading this repo to
 4. Enable services:
    - `ln -s /data/venus_kostal_plenticore/service /service/venus_kostal_plenticore` The daemon-tools should automatically start this service within seconds.
 
+5. Configure this script to start when venus OS is booted:
+   Create rc.local, make it executable:
+   ```
+   echo -e '#!/bin/bash' >> /data/rc.local
+   echo 'ln -s /data/venus_kostal_plenticore/service /service/venus_kostal_plenticore' >> /data/rc.local
+   chmod +x /data/rc.local 
+   ```   
+   If you already have the file `/data/rc.local` only add the line  `ln -s /data/venus_kostal_plenticore/service /service/venus_kostal_plenticore` to it.
+   The rc.local file is executed when venus os boots and will create the link in the service directory for you
+
 
 ### What to do if you have multiple plenticores? 
 
 If you have multiple plenticores, you have to create a service for each one. So duplicate the service dir (`/data/venus_kostal_plenticore/service`) to e.g. `/data/venus_kostal_plenticore/service-east-roof` and `/data/venus_kostal_plenticore/service-west-roof`.
 Also duplicate the config and edit the run scripts in both service folders so that both use their own config.
-Lastly link both services in the /service dir as shown in step 6.
+Lastly link both services in the /service dir as shown in step 5.
 Make sure that you configure different names for both inverters.
 
 
