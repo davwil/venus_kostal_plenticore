@@ -43,7 +43,7 @@ Important: You might need to reinstall these dependencies after a venus os updat
 Download all files from this repo and copy them to the new dir `/data/venus_kostal_plenticore`.
 If you download the code as .zip from github, make sure to remove the `-main` prefix. 
 Create that dir if it does not jet exists. 
-Venus OS does not come with git, so I recommend cloning/downloading this repo to your machine, then transfer all files e.g. using scp (`scp venus_kostal_plenticore/* root@venusip:/data/venus_kostal_plenticore/`)
+Venus OS does not come with git, so I recommend cloning/downloading this repo to your machine, then transfer all files e.g. using scp (`scp -r venus_kostal_plenticore/* root@venusip:/data/venus_kostal_plenticore/`)
 
 
 ### Configure plugin:
