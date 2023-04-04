@@ -125,8 +125,7 @@ def parse_config():
 
     section = parser.sections()[0]
 
-    inverter = Kostal(section, get_ip(section), get_password(section), 10)
-    # inverter = Kostal(section, get_ip(section), get_password(section), get_interval(section))
+    inverter = Kostal(section, get_ip(section), get_password(section), get_interval(section))
 
     print('Found config: ' + section)
 
