@@ -28,7 +28,11 @@ def get_data(baseUrl, sessionId):
 
     url = baseUrl + "/processdata/scb:statistic:EnergyFlow/Statistic:Yield:Total"
     response = requests.get(url=url, headers=headers)
-    data['EFAT'] = round(response.json()[0]['processdata'][0]['value'] / 1000, 3)
+    data['EFAT'] = round(response.json()[0]['processdata'][0]['value'] / 1000.0, 3)
+    # also store the energy for all three phases
+    data['EA'] = round(data['EFAT']/3.0, 3)
+    data['EB'] = round(data['EFAT']/3.0, 3)
+    data['EC'] = round(data['EFAT']/3.0, 3)
 
     # assume we always run ;)
     data['STATUS'] = 'running'
