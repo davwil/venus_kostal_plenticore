@@ -1,7 +1,14 @@
 import requests
-
+import time
+lastTime = 0
+lastEnergy = 0
+calcEnergy = 0
 
 def get_data(baseUrl, sessionId):
+    global lastTime
+    global lastEnergy
+    global calcEnergy
+
     headers = {'Content-type': 'application/json', 'Accept': 'application/json',
                'authorization': "Session " + sessionId}
     url = baseUrl + "/processdata/devices:local:ac"
@@ -28,9 +35,31 @@ def get_data(baseUrl, sessionId):
 
     url = baseUrl + "/processdata/scb:statistic:EnergyFlow/Statistic:Yield:Total"
     response = requests.get(url=url, headers=headers)
-    data['EFAT'] = round(response.json()[0]['processdata'][0]['value'] / 1000, 3)
+    energy = response.json()[0]['processdata'][0]['value']
+    currentTime = time.time()
+
+    # Unfortunately the total energy is only updated every 5 min. This is used by the Victron VRM Portal
+    # to calculate the energy consumption.
+    # If the portal has no regular updates, the energy consumption is higher than normal.
+    # To avoid it, we need a actual energy. So we need to calculate the delta by our own.
+
+    # If a new value is retrieved, use this value and reset the delta calculation.
+    if energy != lastEnergy:
+        print("Calculated Energy: {} Energy: {}".format(calcEnergy, energy))
+        lastEnergy = energy
+        calcEnergy = energy
+        lastTime = currentTime
+    else: # Calculate the delta
+        # The formula is E = P * t
+        deltaTime = currentTime-lastTime # time since last delta calculation
+        delta = data['PT'] * deltaTime / 3600 # P is given in Watt and delta time should be hour, so divide it by 3600 (60min * 60s = 1h)
+        calcEnergy += delta # add the new delta to the total energy
+        print("Calculated Energy: {} Energy: {} Last Energy {}.".format(calcEnergy, energy, lastEnergy))
+
+    data['EFAT'] = round(calcEnergy / 1000, 3)
 
     # assume we always run ;)
     data['STATUS'] = 'running'
+    lastTime = currentTime # record the last time for the next iteration
 
     return data
