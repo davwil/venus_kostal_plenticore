@@ -7,6 +7,7 @@ import re
 from configparser import ConfigParser
 
 from plenticoreDataService import get_data
+from loggingConfig import logger
 from plenticoreSessionService import get_session_key
 
 import requests
@@ -90,18 +91,18 @@ def parse_config():
     cfgname = 'kostal.ini'
     if len(sys.argv) > 1:
         cfgname = str(sys.argv[1])
-    print('Parsing config: ' + cfgname)
+    logger.info('Parsing config: ' + cfgname)
     parser.read(cfgname)
 
     if len(parser.sections()) == 0:
-        print("config seems to be empty...")
+        logger.warn("config seems to be empty...")
         exit(1)
 
     def get_password(section):
         if parser.has_option(section, 'password'):
             return parser.get(section, 'password')
         else:
-            print('config section ' + section + ' is missing the password.')
+            logger.warn('config section ' + section + ' is missing the password.')
             exit(1)
 
     def get_ip(section):
@@ -109,27 +110,27 @@ def parse_config():
             ip = parser.get(section, 'ip')
             match = re.match(r"http:\/\/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip)
             if match is None or match.span() != (0, len(ip)):
-                print("Error: ip should be of format: 'http://123.123.123.123', instead got '" + ip + "'")
+                logger.warn("Error: ip should be of format: 'http://123.123.123.123', instead got '" + ip + "'")
                 exit(1)
             return ip + base_path
         else:
-            print('config section ' + section + ' is missing the ip..')
+            logger.warn('config section ' + section + ' is missing the ip..')
             exit(1)
 
     def get_interval(section):
         if parser.has_option(section, 'interval'):
             return int(parser.get(section, 'interval'))
         else:
-            print('config section ' + section + ' is missing the interval..')
+            logger.warn('config section ' + section + ' is missing the interval..')
             exit(1)
 
     section = parser.sections()[0]
 
     inverter = Kostal(section, get_ip(section), get_password(section), get_interval(section))
 
-    print('Found config: ' + section)
+    logger.info('Found config: ' + section)
 
-    print(inverter.inverter_name, ' at ', inverter.ip)
+    logger.info(inverter.inverter_name + ' at ' + inverter.ip)
 
 
 def set_dbus_data(data):
@@ -138,7 +139,7 @@ def set_dbus_data(data):
     if inverter.stats.last_time == time_ms:
         inverter.dbus_inverter.inc('/stats/repeated_values')
         inverter.dbus_inverter.inc('/stats/last_repeated_values')
-        print('got repeated value')
+        logger.info('got repeated value')
     else:
         inverter.stats.last_time = time_ms
         inverter.dbus_inverter.set('/stats/last_repeated_values', 0)
@@ -160,11 +161,12 @@ def set_dbus_data(data):
 
         inverter.dbus_inverter.set('/Ac/Energy/Forward', data['EFAT'], 3)
 
-        print("++++++++++")
-        print("POWER Phase A: " + str(data['PA']) + "W")
-        print("POWER Phase B: " + str(data['PB']) + "W")
-        print("POWER Phase C: " + str(data['PC']) + "W")
-        print("POWER Total: " + str(data['PT']) + "W")
+        logger.debug("++++++++++")
+        logger.debug("POWER Phase A: " + str(data['PA']) + "W")
+        logger.debug("POWER Phase B: " + str(data['PB']) + "W")
+        logger.debug("POWER Phase C: " + str(data['PC']) + "W")
+        logger.debug("POWER Total: " + str(data['PT']) + "W")
+        logger.debug("Energy Total: " + str(data['EFAT']) + "W")
 
 
 def init_session():
@@ -182,18 +184,17 @@ def init_dbus():
                                           inverter.sw_version, '0.1')
     return
 
-
 def read_data():
     global inverter
     try:
-        print('reading data from ',
+        logger.debug('reading data from ' +
               inverter.inverter_name + ' inverter at ' + inverter.ip + ' using sessionid ' + inverter.session_id)
         data = get_data(inverter.ip, inverter.session_id)
         set_dbus_data(data)
-        print('done.')
+        logger.debug('done.')
         return
     except (requests.exceptions.HTTPError, requests.exceptions.RequestException):
-        print('Error reading from ' + inverter.ip)
+        logger.warn('Error reading from ' + inverter.ip)
         inverter.stats.connection_ko += 1
         inverter.stats.last_connection_errors += 1
         return 1
@@ -203,12 +204,12 @@ def cyclic_update(run_event):
     global inverter
 
     while run_event.is_set():
-        print("Thread: doing")
+        logger.debug("Thread: doing")
 
         push_statistics()
 
         if inverter.stats.last_connection_errors > inverter.max_retries:
-            print('Lost connection to kostal, reset')
+            logger.warn('Lost connection to kostal, reset')
             inverter.dev_state = DevState.Connect
             inverter.stats.last_connection_errors = 0
             inverter.stats.reconnect += 1
@@ -229,7 +230,7 @@ def cyclic_update(run_event):
         elif inverter.dev_state == DevState.Connected:
             read_data()
         else:
-            print('invalid state...')
+            logger.error('invalid state...')
 
         time.sleep(inverter.interval)
     return
@@ -255,4 +256,4 @@ except (KeyboardInterrupt, SystemExit):
     mainloop.quit()
     run_event.clear()
     update_thread.join()
-    print("Host: KeyboardInterrupt")
+    logger.info("Host: KeyboardInterrupt")
