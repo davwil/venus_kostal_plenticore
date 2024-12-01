@@ -17,12 +17,12 @@ from vedbus import VeDbusService
 class DbusInverter:
     dbusservice = []
 
-    def __init__(self, dev, connection, device_instance, serial, product_name, firmware_version, process_version):
+    def __init__(self, name, connection, device_instance, serial, product_name, firmware_version, process_version):
 
-        print(__file__ + " starting up, connecting as pvinverter '" + dev + "' to dbus..")
+        print(__file__ + " starting up, connecting as pvinverter '" + name + "' with vrm instance '" + str(device_instance) + "' to dbus..")
 
         # Put ourselves on to the dbus
-        dbus_name = 'com.victronenergy.pvinverter.' + dev
+        dbus_name = 'com.victronenergy.pvinverter.' + name
         print('dbus_name: ' + dbus_name)
         self.dbusservice = VeDbusService(dbus_name)
 
