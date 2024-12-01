@@ -24,7 +24,7 @@ class DbusInverter:
         # Put ourselves on to the dbus
         dbus_name = 'com.victronenergy.pvinverter.' + name
         print('dbus_name: ' + dbus_name)
-        self.dbusservice = VeDbusService(dbus_name)
+        self.dbusservice = VeDbusService(dbus_name, register = False)
 
         # Add objects required by ve-api
         self.dbusservice.add_path('/Mgmt/ProcessName', __file__)
@@ -71,6 +71,8 @@ class DbusInverter:
         self.dbusservice.add_path('/stats/last_repeated_values', 0, gettextcallback=_x, writeable=True)
         self.dbusservice.add_path('/stats/reconnect', 0, gettextcallback=_x)
         self.dbusservice.add_path('/Mgmt/intervall', 1, gettextcallback=_s, writeable=True)
+
+        self.dbusservice.register()
 
     def invalidate(self):
         self.set('/Ac/L1/Power', [])
