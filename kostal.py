@@ -48,15 +48,17 @@ class Kostal:
     inverter_name = 'NO_NAME_PROVIDED'
     session_id = 'XXX'
     sw_version = ''
+    position = 0
     dev_state = DevState.WaitForDevice
     dbus_inverter = []
 
-    def __init__(self, name, ip, instance, password, interval):
+    def __init__(self, name, ip, instance, password, interval, position):
         self.inverter_name = name
         self.ip = ip
         self.instance = instance
         self.password = password
         self.interval = interval
+        self.position = position
 
 
 global inverter
@@ -119,10 +121,17 @@ def parse_config():
             print('config section ' + section + ' is missing the instance, using default 50...')
             return 50
 
+    def get_position(section):
+        if parser.has_option(section, 'position'):
+            return int(parser.get(section, 'position'))
+        else:
+            print('config section ' + section + ' is missing the position, using default 0...')
+            return 0
+
     section = parser.sections()[0]
 
-    inverter = Kostal(section, get_ip(section), get_instance(section), get_password(section),
-                      get_interval(section))
+    inverter = Kostal(section, get_ip(section), get_instance(section), get_password(section), get_interval(section),
+                      get_position(section))
 
     print('Found config: ' + section)
 
@@ -174,7 +183,7 @@ def init_dbus():
     inverter.dbus_inverter = DbusInverter(inverter.inverter_name, inverter.ip, inverter.instance,
                                           '0',
                                           inverter.inverter_name,
-                                          inverter.sw_version, '0.1')
+                                          inverter.sw_version, '0.1', inverter.position)
     return
 
 

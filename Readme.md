@@ -55,6 +55,7 @@ Venus OS does not come with git, so I recommend cloning/downloading this repo to
     instance = 50
     password = XXX
     interval = 5
+    position = 0 # 0:AC input 1, 1: AC output, 2: AC input 2
     ``` 
 
 2. set File permissions for run and kill scripts:
