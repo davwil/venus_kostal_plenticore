@@ -10,25 +10,13 @@ from plenticoreDataService import get_data
 from plenticoreSessionService import get_session_key
 
 import requests
-from requests.auth import HTTPBasicAuth
-import json
 
 from dbus_inverter import DbusInverter
 
 from dbus.mainloop.glib import DBusGMainLoop
 
-try:
-    import gobject  # used by victron
-    from gobject import idle_add
-except:
-    from gi.repository import GObject as gobject
-    from gi.repository.GObject import idle_add
+from gi.repository import GLib
 
-import dbus
-import dbus.service
-import inspect
-import pprint
-import os
 import sys
 import threading
 import time
@@ -244,8 +232,7 @@ try:
     update_thread = threading.Thread(target=cyclic_update, args=(run_event,))
     update_thread.start()
 
-    # gobject.threads_init()
-    mainloop = gobject.MainLoop()
+    mainloop = GLib.MainLoop()
     mainloop.run()
 
 except (KeyboardInterrupt, SystemExit):
